@@ -36,10 +36,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 THIRD_PARTY_APPS = [
-    'debug_toolbar'
+    'debug_toolbar',
 ]
 
 LOCAL_APPS = [
+    'accounts',
+    'core',
+    'podcast',
+    'parser',
+    'actions',
 ]
 
 INSTALLED_APPS = [
