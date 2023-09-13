@@ -52,3 +52,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return "Super User" if self.is_superuser else self.groups.get()
 
     role.short_description = _('Role')
+        
