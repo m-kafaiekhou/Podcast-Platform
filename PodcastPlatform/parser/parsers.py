@@ -73,5 +73,12 @@ class RSSParser:
 
         return data_dict
     
-    
+    def get_new_episodes(self, *args, **kwargs):
+        pass
+
+    def create_model_objects_instances(self, *args, **kwargs):
+        pass
+
+    def save_model_objects(self, *args, **kwargs):
+        pass
     
