@@ -2,14 +2,17 @@ import requests
 from xml.etree import ElementTree as ET
 
 
-response = requests.get('https://rss.art19.com/apology-line')
-print(type(response.content))
+# response = requests.get('https://rss.art19.com/apology-line')
+# print(type(response.content))
 
-root = ET.fromstring(response.content)
+# root = ET.fromstring(response.content)
 
-print(root.find('channel/item').find('title').text)
-print(root.find('channel/title').text)
-print(root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}category').get('text'))
+# print(root.find('channel/item').findtext(
+# ".//content:eoded",
+# namespaces={"content": "http://purl.org/rss/1.0/modules/content/"},
+# ))
+# print(root.find('channel/title').text)
+# print(root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}category').get('text'))
 
 
 
@@ -96,7 +99,6 @@ class PodcastRSSParser:
         Returns:
             type: bytes
         """
-
         response = requests.get(self.podcastModel.rss_url)
         return response.content
     
@@ -105,7 +107,7 @@ class PodcastRSSParser:
 
         return tree
     
-    def get_channel_data_model_obj(self):
+    def get_channel_data_model_dict(self):
         """
         gets the rss element tree and turns the channel data to a dict
           with keys and values such that it can be unpacked to make an model object out of it
@@ -116,50 +118,91 @@ class PodcastRSSParser:
         root = self.get_element_tree()
 
         data_dict = {
-            'title': root.find('channel/title'),
-            'description': root.find('channel/description'),
-            'copyright': root.find('channel/copyright'),
-            'generator': root.find('channel/generator'),
-            'link': root.find('channel/link'),
-            'owner_name': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}name'),
-            'owner_email': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}email'),
-            'author': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}author'),
-            'summary': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}summary'),
-            'language': root.find('channel/language'),
-            'explicit': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}explicit'),
+            'title': root.findtext('channel/title'),
+            'description': root.findtext('channel/description'),
+            'copyright': root.findtext('channel/copyright'),
+            'generator': root.findtext('channel/generator'),
+            'link': root.findtext('channel/link'),
+            'owner_name': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}name'),
+            'owner_email': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}email'),
+            'author': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}author'),
+            'summary': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}summary'),
+            'language': root.findtext('channel/language'),
+            'explicit': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}explicit'),
             'category': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}category').get('text'),
-            'keywords': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}keywords'),
-            'type': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}type'),
+            'keywords': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}keywords'),
+            'type': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}type'),
             'icon_image_url': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}image').get('href'),
-            'image_url': root.find('channel/image/url'),
-            'image_link': root.find('channel/image/link'),
-            'image_title': root.find('channel/image/title'),
+            'image_url': root.findtext('channel/image/url'),
+            'image_link': root.findtext('channel/image/link'),
+            'image_title': root.findtext('channel/image/title'),
             }
         
-        obj = self.podcastModel(**data_dict)
+        for key, val in data_dict.items():
+            setattr(self.podcastModel, key, val)
 
-        return obj
+        self.podcastModel.save()
+
 
     def get_episodes_model_obj_list(self):
         root = self.get_element_tree()
 
         items = root.findall('channel/item')
 
-        item_lst = [
-            self.episodeModel(
+        item_lst = []
 
+        for item in items:
+            title = item.findtext('title')
+            description = item.findtext('description')
+            
+            episode_num = item.findtext('.//itunes:episode', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            summary = item.findtext('.//itunes:summary', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            content = item.findtext(
+                        ".//content:encoded",
+                        namespaces={"content": "http://purl.org/rss/1.0/modules/content/"}
+                        )
+            guid = item.findtext('guid')
+            publish_date = item.findtext('pubDate')
+            explicit = item.findtext('.//itunes:explicit', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            image_url = item.find('.//itunes:image', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"}).get('href') if item.find('.//itunes:image', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"}) else None
+            keywords = item.findtext('.//itunes:keywords', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            duration = item.findtext('.//itunes:duration', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            enclosure_url = item.find('enclosure').get('url')
+            enclosure_type = item.find('enclosure').get('type')
+            enclosure_length = item.find('enclosure').get('length')
+    
+            obj = self.episodeModel(
+                podcast = self.podcastModel,
+                title = title,
+                description = description,
+                episode_num = episode_num,
+                summary = summary,
+                content = content,
+                guid = guid,
+                publish_date = publish_date,
+                explicit = explicit,
+                image_url = image_url,
+                keywords = keywords,
+                duration = duration,
+                enclosure_url = enclosure_url,
+                enclosure_type = enclosure_type,
+                enclosure_length = enclosure_length
             )
-        ]
 
-        
-
-        return 1
+            item_lst.append(obj)
+    
+        return item_lst
     
     def get_new_episodes(self, *args, **kwargs):
         pass
 
-    def create_model_objects_instances(self, *args, **kwargs):
-        pass
+    def create_episode_model_objects(self, instances):
+        self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
 
-    def save_model_objects(self, *args, **kwargs):
+    def fill_db(self):
+        self.get_channel_data_model_dict()
+        lst = self.get_episodes_model_obj_list()
+        self.create_episode_model_objects(lst)
+
+    def update_db(self):
         pass
