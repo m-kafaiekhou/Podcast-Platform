@@ -29,4 +29,9 @@ class RSSParser:
         response = requests.get(self.podcastModel.rss_url)
         return response.content
     
+    def get_element_tree(self):
+        tree = ET.fromstring(self.get_rss_content_from_url())
+
+        return tree
+    
     
