@@ -7,22 +7,7 @@ from core.utils import phone_regex
 class CustomUserManager(BaseUserManager):
 
     def create_user(self, username, email, first_name, last_name, phone_number, password):
-
-        if not username:
-            raise ValueError('user must have an username')
-
-        if not email:
-            raise ValueError('user must have an email')
-
-        if not first_name:
-            raise ValueError('user must have a first name')
-        
-        if not last_name:
-            raise ValueError('user must have a last name')
-
-        if not phone_number:
-            raise ValueError('user must have a phone number')
-        
+            
         user = self.model(
             username=username,
             email=self.normalize_email(email),

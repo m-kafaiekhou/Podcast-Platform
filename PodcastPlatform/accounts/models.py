@@ -7,7 +7,7 @@ from .managers import CustomUserManager
 from core.utils import phone_regex_validator
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser):
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
@@ -52,3 +52,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return "Super User" if self.is_superuser else self.groups.get()
 
     role.short_description = _('Role')
+        
