@@ -7,8 +7,8 @@ from core.models import BaseModel
 class Podcast(BaseModel):
     rss_url = models.URLField()
 
-    episode_format = models.ForeignKey(PodcastEpisodeFormat, on_delete=models.PROTECT)
-    podcast_format = models.ForeignKey(PodcastFormat, on_delete=models.PROTECT)
+    # episode_format = models.ForeignKey(PodcastEpisodeFormat, on_delete=models.PROTECT)
+    # podcast_format = models.ForeignKey(PodcastFormat, on_delete=models.PROTECT)
  
     title = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=100, null=True, blank=True)
