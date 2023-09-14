@@ -18,5 +18,15 @@ class RSSParser:
         self.podcastModel = podcastModel
         self.episodeModel = episodeModel
 
+    def get_rss_content_from_url(self):
+        """
+        Sends a GET request to model rss url and returns the content
+
+        Returns:
+            type: bytes
+        """
+
+        response = requests.get(self.podcastModel.rss_url)
+        return response.content
     
     
