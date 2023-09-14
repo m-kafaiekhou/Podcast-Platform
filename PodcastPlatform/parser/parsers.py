@@ -57,4 +57,21 @@ class RSSParser:
 
         return data_dict
 
+    def get_episodes_feed_list_dict(self):
+        root = self.get_element_tree()
+
+        data_dict = {}
+
+        for field in self.podcastModel._meta.get_fields():
+            path = getattr(self.podcastModel, field).split()
+
+            if len(path) > 1:
+                data_dict[f'{field}'] = root.findall(path[0]).get(path[1])
+
+            else:
+                data_dict[f'{field}'] = root.findall(path[0])
+
+        return data_dict
+    
+    
     
