@@ -34,4 +34,27 @@ class RSSParser:
 
         return tree
     
+    def get_channel_feed_data_dict(self):
+        """
+        gets the rss element tree and turns the channel data to a dict
+          with keys and values such that it can be unpacked to make an model object out of it
+
+        Returns:
+            Dict
+        """
+        root = self.get_element_tree()
+
+        data_dict = {}
+
+        for field in self.podcastModel._meta.get_fields():
+            path = getattr(self.podcastModel, field).split()
+
+            if len(path) > 1:
+                data_dict[f'{field}'] = root.find(path[0]).get(path[1])
+
+            else:
+                data_dict[f'{field}'] = root.find(path[0])
+
+        return data_dict
+
     
