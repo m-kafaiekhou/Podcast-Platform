@@ -1,7 +1,9 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
 
 from parser.parsers import PodcastRSSParser
 from core.models import BaseModel
+from actions.models import Like, Comment, Subscription
 
 
 class Podcast(BaseModel):
@@ -29,6 +31,8 @@ class Podcast(BaseModel):
     image_link = models.CharField(max_length=256, null=True, blank=True)
     image_title = models.CharField(max_length=256, null=True, blank=True)
 
+    subscriptions = GenericRelation(Subscription)
+    
     def __str__(self):
         return self.title or super().__str__()
     
@@ -52,6 +56,9 @@ class PodcastEpisode(BaseModel):
     enclosure_url = models.CharField(max_length=512, null=True, blank=True)
     enclosure_type = models.CharField(max_length=256, null=True, blank=True)
     enclosure_length = models.CharField(max_length=256, null=True, blank=True)
+
+    comments = GenericRelation(Comment)
+    likes = GenericRelation(Like)
 
     def __str__(self) -> str:
         return self.title
