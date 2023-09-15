@@ -6,6 +6,7 @@ class PodcastSerializer(serializers.ModelSerializer):
     class Meta:
         model = Podcast
         fields = [
+            'id'
             "title",
             "description",
             "copyright",
@@ -30,6 +31,7 @@ class PodcastEpisodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PodcastEpisode
         fields = [
+            'id',
             "title",
             "description",
             "episode_num",
