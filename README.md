@@ -153,3 +153,8 @@ The project should now be running locally at `http://localhost:8000/`.
 - Optimize database queries for improved performance.
 
 - Implement advanced security measures such as rate limiting and request validation.
+
+## Comming soon ...
+
+#### In the near Feature RSSFormat models will be added and parser class will be singular such that the parser will parse the RSS feed based on the Format class provided.
+#### This way if there comes a feed with a different format there won't be any needs for a new parser
