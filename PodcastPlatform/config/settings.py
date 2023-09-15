@@ -37,6 +37,7 @@ ALLOWED_HOSTS = []
 
 THIRD_PARTY_APPS = [
     'debug_toolbar',
+    'rest_framework',
 ]
 
 LOCAL_APPS = [
