@@ -1,28 +1,29 @@
 from rest_framework import generics, views
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Podcast, PodcastEpisode
 from .serializers import PodcastSerializer, PodcastEpisodeSerializer
 
+class CustomPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
-class PodcastListCreateView(generics.ListAPIView):
+
+class PodcastListView(generics.ListAPIView):
     serializer_class = PodcastSerializer
     queryset = Podcast.objects.get_active_list()
+    pagination_class = CustomPagination
 
 
-class PodcastEpisodeListCreateView(views.APIView):
+class PodcastEpisodeListView(generics.ListAPIView):
+    serializer_class = PodcastEpisodeSerializer
+    queryset = PodcastEpisode.objects.get_active_list()
+    pagination_class = CustomPagination
 
-    def get(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk')
-        podcast = Podcast.objects.get(pk=pk)
-        episode_queryset = PodcastEpisode.objects.filter(podcast__id=pk, is_deleted=False)
 
-        podcast_serializer = PodcastSerializer(podcast)
-        episode_serializer = PodcastEpisodeSerializer(episode_queryset, many=True)
-
-        data = {
-            'podcast': podcast_serializer.data,
-            'episodes': episode_serializer.data
-            }
-        
-        return Response(data=data)
+class PodcastEpisodeDetailView(generics.RetrieveAPIView):
+    queryset = PodcastEpisode.objects.get_active_list()
+    serializer_class = PodcastEpisodeSerializer
+    lookup_field = 'pk'
