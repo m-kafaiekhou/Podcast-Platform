@@ -25,3 +25,23 @@ class PodcastSerializer(serializers.ModelSerializer):
             "image_title",
         ]
 
+
+class PodcastEpisodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PodcastEpisode
+        fields = [
+            "title",
+            "description",
+            "episode_num",
+            "summary",
+            "content",
+            "guid",
+            "publish_date",
+            "explicit",
+            "image_url",
+            "keywords",
+            "duration",
+            "enclosure_url",
+            "enclosure_type",
+            "enclosure_length",
+        ]
