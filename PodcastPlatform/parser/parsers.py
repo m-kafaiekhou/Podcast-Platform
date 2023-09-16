@@ -88,6 +88,12 @@ from xml.etree import ElementTree as ET
 
 
 class PodcastRSSParser:
+
+    NAMESPACES = {
+        "itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd",
+        "content": "http://purl.org/rss/1.0/modules/content/",
+    }
+
     def __init__(self, podcastModel: object, episodeModel: object):
         self.podcastModel = podcastModel
         self.episodeModel = episodeModel
@@ -123,16 +129,16 @@ class PodcastRSSParser:
             'copyright': root.findtext('channel/copyright'),
             'generator': root.findtext('channel/generator'),
             'link': root.findtext('channel/link'),
-            'owner_name': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}name'),
-            'owner_email': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}owner/{http://www.itunes.com/dtds/podcast-1.0.dtd}email'),
-            'author': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}author'),
-            'summary': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}summary'),
+            'owner_name': root.findtext('channel/itunes:owner/itunes:name', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'owner_email': root.findtext('channel/itunes:owner/itunes:email', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'author': root.findtext('channel/itunes:author', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'summary': root.findtext('channel/itunes:summary', namespaces={'itunes': self.NAMESPACES['itunes']}),
             'language': root.findtext('channel/language'),
-            'explicit': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}explicit'),
-            'category': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}category').get('text'),
-            'keywords': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}keywords'),
-            'type': root.findtext('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}type'),
-            'icon_image_url': root.find('channel/{http://www.itunes.com/dtds/podcast-1.0.dtd}image').get('href'),
+            'explicit': root.findtext('channel/itunes:explicit', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'category': root.find('channel/itunes:category', namespaces={'itunes': self.NAMESPACES['itunes']}).get('text'),
+            'keywords': root.findtext('channel/itunes:keywords', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'type': root.findtext('channel/itunes:type', namespaces={'itunes': self.NAMESPACES['itunes']}),
+            'icon_image_url': root.find('channel/itunes:image', namespaces={'itunes': self.NAMESPACES['itunes']}).get('href'),
             'image_url': root.findtext('channel/image/url'),
             'image_link': root.findtext('channel/image/link'),
             'image_title': root.findtext('channel/image/title'),
@@ -155,18 +161,18 @@ class PodcastRSSParser:
             title = item.findtext('title')
             description = item.findtext('description')
             
-            episode_num = item.findtext('.//itunes:episode', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
-            summary = item.findtext('.//itunes:summary', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            episode_num = item.findtext('.//itunes:episode', namespaces={"itunes": self.NAMESPACES['itunes']})
+            summary = item.findtext('.//itunes:summary', namespaces={"itunes": self.NAMESPACES['itunes']})
             content = item.findtext(
                         ".//content:encoded",
-                        namespaces={"content": "http://purl.org/rss/1.0/modules/content/"}
+                        namespaces={"content": self.NAMESPACES['content']}
                         )
             guid = item.findtext('guid')
             publish_date = item.findtext('pubDate')
-            explicit = item.findtext('.//itunes:explicit', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
-            image_url = item.find('.//itunes:image', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"}).get('href') if item.find('.//itunes:image', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"}) else None
-            keywords = item.findtext('.//itunes:keywords', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
-            duration = item.findtext('.//itunes:duration', namespaces={"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"})
+            explicit = item.findtext('.//itunes:explicit', namespaces={"itunes": self.NAMESPACES['itunes']})
+            image_url = item.find('.//itunes:image', namespaces={"itunes": self.NAMESPACES['itunes']}).get('href') if item.find('.//itunes:image', namespaces={"itunes": self.NAMESPACES['itunes']}) else None
+            keywords = item.findtext('.//itunes:keywords', namespaces={"itunes": self.NAMESPACES['itunes']})
+            duration = item.findtext('.//itunes:duration', namespaces={"itunes": self.NAMESPACES['itunes']})
             enclosure_url = item.find('enclosure').get('url')
             enclosure_type = item.find('enclosure').get('type')
             enclosure_length = item.find('enclosure').get('length')
