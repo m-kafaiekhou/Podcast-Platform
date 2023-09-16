@@ -6,7 +6,7 @@ class PodcastSerializer(serializers.ModelSerializer):
     class Meta:
         model = Podcast
         fields = [
-            'id'
+            'id',
             "title",
             "description",
             "copyright",
