@@ -7,7 +7,7 @@ from .managers import CustomUserManager
 from core.utils import phone_regex_validator
 
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
