@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import PodcastListView, PodcastEpisodeListView, PodcastEpisodeDetailView
 
+app_name = 'podcast'
 
 urlpatterns =[
     path("podcasts/", PodcastListView.as_view(), name="podcast-list"),
