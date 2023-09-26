@@ -177,14 +177,14 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 # REST FRAMEWORK
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'apps.management.authentication.JWTAuthentication',
-    ]
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+#     ],
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'accounts.authentications.JWTAuthentication',
+#     ]
+# }
 
 JWT_CONF = {
     'TOKEN_LIFETIME_HOURS': 5
