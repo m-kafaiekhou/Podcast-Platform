@@ -11,11 +11,10 @@ services:
     environment:
       - DEBUG=1
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
-      - CELERY_BROKER=redis://redis:6379/0
-      - CELERY_BACKEND=redis://redis:6379/1
+      - CELERY_BROKER=redis://redis:6379/1
+      - CELERY_BACKEND=redis://redis:6379/2
     depends_on:
       - db
-      - redis
 
   db:
     image: postgres:14
@@ -25,13 +24,18 @@ services:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
 
   celery:
+    restart: always
     build:
       context: .
     command: celery -A config worker -l INFO
     volumes:
       - .:/code
     depends_on:
+      - db
       - redis
+      - web
+    environment:
+      - C_FORCE_ROOT="true"
 
   redis:
     image: "redis:alpine"
@@ -39,3 +43,7 @@ services:
       - .:/code
     ports:
       - "6379:6379"
+
+
+networks:
+  main:
