@@ -149,7 +149,6 @@ class PodcastRSSParser:
 
         self.podcastModel.save()
 
-
     def get_episodes_model_obj_list(self):
         root = self.get_element_tree()
 
@@ -178,29 +177,26 @@ class PodcastRSSParser:
             enclosure_length = item.find('enclosure').get('length')
     
             obj = self.episodeModel(
-                podcast = self.podcastModel,
-                title = title,
-                description = description,
-                episode_num = episode_num,
-                summary = summary,
-                content = content,
-                guid = guid,
-                publish_date = publish_date,
-                explicit = explicit,
-                image_url = image_url,
-                keywords = keywords,
-                duration = duration,
-                enclosure_url = enclosure_url,
-                enclosure_type = enclosure_type,
-                enclosure_length = enclosure_length
+                podcast=self.podcastModel,
+                title=title,
+                description=description,
+                episode_num=episode_num,
+                summary=summary,
+                content=content,
+                guid=guid,
+                publish_date=publish_date,
+                explicit=explicit,
+                image_url=image_url,
+                keywords=keywords,
+                duration=duration,
+                enclosure_url=enclosure_url,
+                enclosure_type=enclosure_type,
+                enclosure_length=enclosure_length
             )
 
             item_lst.append(obj)
     
         return item_lst
-    
-    def get_new_episodes(self, *args, **kwargs):
-        pass
 
     def create_episode_model_objects(self, instances):
         self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
@@ -209,6 +205,3 @@ class PodcastRSSParser:
         self.get_channel_data_model_dict()
         lst = self.get_episodes_model_obj_list()
         self.create_episode_model_objects(lst)
-
-    def update_db(self):
-        pass
