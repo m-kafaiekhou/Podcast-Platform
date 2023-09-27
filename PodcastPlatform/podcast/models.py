@@ -37,7 +37,6 @@ class Podcast(BaseModel):
         return self.title or super().__str__()
     
 
-
 class PodcastEpisode(BaseModel):
     podcast = models.ForeignKey(Podcast, on_delete=models.PROTECT)
 
