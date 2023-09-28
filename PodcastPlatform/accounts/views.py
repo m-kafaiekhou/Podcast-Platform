@@ -1,11 +1,14 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .utils import cache_refresh_token, validate_cached_token
+from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache
 from rest_framework.exceptions import AuthenticationFailed
 from .authentications import JWTAuthentication
 from .serializers import RegisterSerializer, LoginSerializer
 from .backends import EmailOrUsernameModelBackend
 from rest_framework import generics, status, permissions, views
+
+
+User = get_user_model()
 
 
 class RegisterView(generics.CreateAPIView):
@@ -53,9 +56,9 @@ class LoginView(views.APIView):
         if user is None:
             return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-        access_token, refresh_token = JWTAuthentication.create_jwt(user)
+        access_token, refresh_token = JWTAuthentication.create_jwt(user.id)
 
-        cache_refresh_token(refresh_token)
+        cache_refresh_token(decode_token(refresh_token))
 
         data = {
             "access": access_token,
@@ -86,6 +89,8 @@ class RefreshTokenView(views.APIView):
 
         refresh_token = request.data.get('refresh_token')
 
+        refresh_token = decode_token(refresh_token)
+
         if not validate_cached_token(refresh_token):
             return Response(data={"message": "invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -93,7 +98,7 @@ class RefreshTokenView(views.APIView):
 
         access_token, refresh_token = JWTAuthentication.create_jwt(user_id)
 
-        cache_refresh_token(refresh_token)
+        cache_refresh_token(decode_token(refresh_token))
 
         data = {
             "access": access_token,
@@ -103,7 +108,7 @@ class RefreshTokenView(views.APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-def logout(request):
+class LogoutView(views.APIView):
     """
     Removes the user from whitelist
 
@@ -113,3 +118,19 @@ def logout(request):
     return:
         HTTPResponse => JSON(API)
     """
+    def post(self, request):
+        access_token = request.data.get('access_token')
+        if not access_token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        jti = decode_token(access_token).get('jti')
+        delete_cache(jti)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AuthenticatedView(views.APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (JWTAuthentication, )
+
+    def get(self, request):
+        return Response(data={"message": "you are authenticated"}, status=status.HTTP_200_OK)
