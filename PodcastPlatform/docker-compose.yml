@@ -6,6 +6,8 @@ services:
     command: python /code/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
+    networks:
+      main:
     ports:
       - "8000:8000"
     environment:
@@ -20,6 +22,8 @@ services:
     image: postgres:14
     volumes:
       - .:/code
+    networks:
+      main:
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
 
@@ -30,17 +34,20 @@ services:
     command: celery -A config worker -l INFO
     volumes:
       - .:/code
+    networks:
+      main:
     depends_on:
       - db
       - redis
       - web
-    environment:
-      - C_FORCE_ROOT="true"
 
   redis:
+    container_name: redis
     image: "redis:alpine"
     volumes:
       - .:/code
+    networks:
+      main:
     ports:
       - "6379:6379"
 
