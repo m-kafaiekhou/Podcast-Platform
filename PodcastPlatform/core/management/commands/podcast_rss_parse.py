@@ -1,22 +1,18 @@
 from django.core.management.base import BaseCommand
-from parser.parsers import PodcastRSSParser
-from podcast.models import Podcast, PodcastEpisode
+
+from parser.tasks import podcast_parse_task
 
 
 class Command(BaseCommand):
     help = "Parse and update podcast data"
 
     def handle(self, *args, **options):
-        podcasts = Podcast.objects.all()
         try:
-            for pod in podcasts:
-                parser = PodcastRSSParser(pod, PodcastEpisode)
-
-                parser.fill_db()
+            podcast_parse_task.delay()
                 
             self.stdout.write(
                     self.style.SUCCESS(
-                        f"Successfully parsed and updated podcast data for all models)"
+                        "Successfully parsed and updated podcast data for all models"
                     )
             )
         except Exception as e:
