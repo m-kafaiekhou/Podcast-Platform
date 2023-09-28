@@ -1,5 +1,7 @@
 from django.core.cache import cache
 from datetime import datetime
+import jwt
+from django.conf import settings
 
 
 def cache_refresh_token(refresh_token):
@@ -24,15 +26,18 @@ def delete_cache(key):
 
 
 def validate_cached_token(refresh_token):
-    user_id = refresh_token.get('user_identifier')
     jti = refresh_token.get('jti')
     cached_token = check_cache(jti)
-
-    if cached_token is None:
-        return False
-
-    return cached_token == user_id
+    return cached_token
 
 
 def check_exp_date(exp_date):
     return datetime.now() < exp_date
+
+
+def decode_token(token):
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+
+def encode_payload(payload):
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
