@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from .models import Podcast, PodcastEpisode
 from .serializers import PodcastSerializer, PodcastEpisodeSerializer
 
+
 class CustomPagination(PageNumberPagination):
     page_size = 15
     page_size_query_param = "page_size"
