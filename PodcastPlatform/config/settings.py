@@ -175,24 +175,45 @@ INTERNAL_IPS = [
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.EmailOrUsernameModelBackend',
+]
 
-# REST FRAMEWORK
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-#     ],
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'accounts.authentications.JWTAuthentication',
-#     ]
-# }
 
 JWT_CONF = {
-    'TOKEN_LIFETIME_HOURS': 5,
+    'TOKEN_LIFETIME_HOURS': 0.01,
     'REFRESH_TOKEN_LIFETIME_HOURS': 192
-
 }
 
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/1")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/2")
 CELERY_ACCEPT_CONTENT = ('json', )
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'celery': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': './log/celery_log.log',
+            'formatter':'verbose',
+        },
+    },
+    "formatters":{
+        'verbose':{
+            'format': "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            'style': '{',
+        },
+    },
+    'loggers': {
+        'celery-log': {
+            'handlers': ['celery'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
