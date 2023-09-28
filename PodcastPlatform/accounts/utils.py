@@ -1,48 +1,38 @@
+from django.core.cache import cache
+from datetime import datetime
 
 
-def create_access_token(user):
-    """
-    Creates an access token for the user
+def cache_refresh_token(refresh_token):
+    user_id = refresh_token.get('user_identifier')
+    jti = refresh_token.get('jti')
+    exp_date = refresh_token.get("exp")
+    iat = refresh_token.get('iat')
+    timeout = exp_date - iat
 
-    args:
-        user => user that sent the request
-    return:
-        access token
-    """
-    pass
+    cache.set(key=f'{jti}', value=f'{user_id}', timeout=timeout)
 
 
-def decrypt_access_token(token):
-    """
-    decrypts access token
-
-    args:
-        token => encrypted token that was given by the user
-    return:
-        decrypted access token
-    """
-    pass
+def check_cache(jti):
+    c = cache.get(f'{jti}')
+    if bool(c):
+        return c
+    return None
 
 
-def create_refresh_token(user):
-    """
-    Creates a refresh token for the user
-
-    args:
-        user => user that sent the request
-    return:
-        refresh token
-    """
-    pass
+def delete_cache(key):
+    cache.delete(f'{key}')
 
 
-def decrypt_refresh_token(token):
-    """
-    decrypts refresh token
+def validate_cached_token(refresh_token):
+    user_id = refresh_token.get('user_identifier')
+    jti = refresh_token.get('jti')
+    cached_token = check_cache(jti)
 
-    args:
-        token => encrypted token that was given by the user
-    return:
-        decrypted refresh token
-    """
-    pass
+    if cached_token is None:
+        return False
+
+    return cached_token == user_id
+
+
+def check_exp_date(exp_date):
+    return datetime.now() < exp_date
