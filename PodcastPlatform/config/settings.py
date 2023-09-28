@@ -110,7 +110,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/0',
+        'LOCATION': 'redis://redis:6379/0',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -187,9 +187,12 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # }
 
 JWT_CONF = {
-    'TOKEN_LIFETIME_HOURS': 5
+    'TOKEN_LIFETIME_HOURS': 5,
+    'REFRESH_TOKEN_LIFETIME_HOURS': 192
+
 }
 
 
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/1")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/1")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/2")
+CELERY_ACCEPT_CONTENT = ('json', )
