@@ -36,8 +36,24 @@ def check_exp_date(exp_date):
 
 
 def decode_token(token):
+    """
+    decrypts token
+
+    args:
+        token => encrypted token that was given by the user
+    return:
+        decrypted token
+    """
     return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 
 
 def encode_payload(payload):
+    """
+    encrypts token
+
+    args:
+        token => encrypted token that was given by the user
+    return:
+        decrypted access token
+    """
     return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
