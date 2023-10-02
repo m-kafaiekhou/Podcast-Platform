@@ -7,7 +7,7 @@ from parser.parsers import PodcastRSSParser
 from podcast.models import Podcast, PodcastEpisode
 
 
-logger = logging.getLogger('celery-log')
+logger = logging.getLogger('celery-log')  # TODO : __name__
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5}, retry_jitter=True, task_time_limit=600, retry_backoff=2)
@@ -19,7 +19,7 @@ def parse_feeds_to_db(self, podcast_pk):
 
         podcast_obj = Podcast.objects.get(pk=podcast_pk)
         parser = PodcastRSSParser(podcast_obj, PodcastEpisode)
-        parser.fill_db()
+        parser.execute()
 
         message = f"ran task parse_feeds_to_db for the {retry_count} time"
         logger.info(message)
