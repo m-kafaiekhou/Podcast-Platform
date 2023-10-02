@@ -94,7 +94,7 @@ class PodcastRSSParser:
         "content": "http://purl.org/rss/1.0/modules/content/",
     }
 
-    def __init__(self, podcastModel: object, episodeModel: object):
+    def __init__(self, podcastModel: object, episodeModel: object):  # TODO typing
         self.podcastModel = podcastModel
         self.episodeModel = episodeModel
 
@@ -201,7 +201,7 @@ class PodcastRSSParser:
     def create_episode_model_objects(self, instances):
         self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
 
-    def fill_db(self):
+    def execute(self):
         self.get_channel_data_model_dict()
         lst = self.get_episodes_model_obj_list()
         self.create_episode_model_objects(lst)
