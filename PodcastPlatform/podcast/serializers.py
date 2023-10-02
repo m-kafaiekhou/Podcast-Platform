@@ -28,6 +28,7 @@ class PodcastSerializer(serializers.ModelSerializer):
 
 
 class PodcastEpisodeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = PodcastEpisode
         fields = [
