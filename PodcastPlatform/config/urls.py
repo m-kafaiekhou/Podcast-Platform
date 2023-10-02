@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('podcast.urls', namespace='podcast')),
     path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("accounts.urls", namespace='accounts')),
+    path("parser/", include("parser.urls", namespace='parser')),
 ]   
