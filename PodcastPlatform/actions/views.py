@@ -9,3 +9,9 @@ class LikeView(InteractionMixin, APIView):
     model = Like
 
 
+class SubscriptionView(InteractionMixin, APIView):
+    action_model = Subscription
+    model = Podcast
+
+
+
