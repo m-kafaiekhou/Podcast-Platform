@@ -75,7 +75,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
     @classmethod
     def get_the_token_from_header(cls, token):
-        token = token.replace(cls.TOKEN_PREFIX, '').replace(' ', '') # TODO
+        token = token.replace(settings.JWT_CONF['TOKEN_PREFIX'], '').replace(' ', '') # TODO
         return token
 
     @staticmethod
