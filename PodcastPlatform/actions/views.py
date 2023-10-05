@@ -29,3 +29,6 @@ class CommentView(InteractionMixin, APIView):
         return super().post(request, **kwargs)
 
 
+class BookmarkView(InteractionMixin, APIView):
+    action_model = Bookmark
+    model = Podcast
