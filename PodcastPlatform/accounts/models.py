@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .managers import CustomUserManager
 from core.utils import phone_regex_validator
+from core.models import BaseModel
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -52,3 +53,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return "Super User" if self.is_superuser else self.groups.get()
 
     role.short_description = _('Role')
+
+
+class Notification(BaseModel):
+    CHOICES = (
+        ('l', 'login'),
+        ('r', 'registery'),
+        ('t', 'token'),
+        ('o', 'others')
+    )
+
+    title = models.CharField(choices=CHOICES, max_length=1)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.message
+    

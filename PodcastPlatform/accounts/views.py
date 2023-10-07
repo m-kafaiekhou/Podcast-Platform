@@ -6,6 +6,7 @@ from .authentications import JWTAuthentication
 from .serializers import RegisterSerializer, LoginSerializer
 from .backends import EmailOrUsernameModelBackend
 from rest_framework import generics, status, permissions, views
+from .producer import publish
 
 
 User = get_user_model()
@@ -27,6 +28,13 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        publish('registery', {'user': instance.id})
+        return instance
+
+
 
 
 class LoginView(views.APIView):
@@ -64,6 +72,8 @@ class LoginView(views.APIView):
             "access": access_token,
             "refresh": refresh_token,
         }
+
+        publish('login', {'user': user.id}) # rabbit
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -104,6 +114,8 @@ class RefreshTokenView(views.APIView):
             "access": access_token,
             "refresh": refresh_token,
         }
+
+        publish('login', {'user': user_id})
 
         return Response(data, status=status.HTTP_201_CREATED)
 

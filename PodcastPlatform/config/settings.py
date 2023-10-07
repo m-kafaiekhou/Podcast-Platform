@@ -38,6 +38,7 @@ ALLOWED_HOSTS = []
 THIRD_PARTY_APPS = [
     'debug_toolbar',
     'rest_framework',
+    'corsheaders',
 ]
 
 LOCAL_APPS = [
@@ -69,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -218,3 +220,6 @@ LOGGING = {
         },
     },
 }
+
+
+CORS_ORIGIN_ALLOW_ALL = True
