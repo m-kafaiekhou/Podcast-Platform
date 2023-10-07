@@ -20,7 +20,7 @@ services:
   db:
     image: postgres:14
     volumes:
-      - .:/code
+      - postgres_data:/usr/share/postgres/data
     networks:
       main:
     environment:
@@ -32,7 +32,7 @@ services:
       context: .
     command: celery -A config worker -l INFO
     volumes:
-      - .:/code
+      - celery_data:/usr/share/celery/data
     networks:
       main:
     depends_on:
@@ -44,12 +44,103 @@ services:
     container_name: redis
     image: "redis:alpine"
     volumes:
-      - .:/code
+      - redis_data:/usr/share/redis/data
     networks:
       main:
     ports:
       - "6379:6379"
 
+  celery-worker:
+    build:
+      context: .
+    container_name: celery-worker
+    entrypoint: celery
+    command: -A celery_app.celery worker --loglevel=info
+    volumes:
+      - celery_data:/usr/share/celery/data
+    links:
+      - redis
+    depends_on:
+      - redis
+    networks:
+      - main
+
+  celery-beat:
+    build:
+      context: .
+    container_name: celery-beat
+    entrypoint: celery
+    command: -A config.celery beat --loglevel=info
+    volumes:
+      - celery_data:/usr/share/celery/data
+    links:
+      - celery-worker
+      - redis
+    depends_on:
+      - celery-worker
+      - redis
+    networks:
+      - main
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-alpine
+    networks:
+      - main
+    volumes:
+      - rabbitmq_data:/usr/share/rabbitmq/data
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  consumers:
+    container_name: consumers
+    build: .
+    command: python manage.py launch_consumers
+    volumes:
+      - rabbitmq_data:/usr/share/rabbitmq/data
+    networks:
+      - main
+    depends_on:
+      - rabbitmq
+      - web
+    restart: always
+
+  elastic:
+    image: elasticsearch:7.17.13
+    container_name: elastic
+    mem_limit: 1g
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - main
+    restart: always
+
+  kibana:
+    image: kibana:7.17.13
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elastic
+    networks:
+      - main
+    restart: always
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+
 
 networks:
   main:
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  elasticsearch_data:
+  kibana_data:
+  celery_data:
