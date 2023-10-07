@@ -39,6 +39,8 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'rest_framework',
     'corsheaders',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
 ]
 
 LOCAL_APPS = [
@@ -223,3 +225,10 @@ LOGGING = {
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
