@@ -11,9 +11,8 @@ User = get_user_model()
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
-    TOKEN_PREFIX = 'Bearer'
 
-    def authenticate(self, request):
+    def authenticate(self, request):   
         jwt_token = request.META.get('HTTP_AUTHORIZATION')
         if jwt_token is None:
             raise AuthenticationFailed("Token not available")
@@ -73,7 +72,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         return access_jwt_token, refresh_jwt_token
 
-    @classmethod
+    @classmethod 
     def get_the_token_from_header(cls, token):
         token = token.replace(settings.JWT_CONF['TOKEN_PREFIX'], '').replace(' ', '') # TODO
         return token
