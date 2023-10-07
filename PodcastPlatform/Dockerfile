@@ -10,6 +10,6 @@ RUN pip install -r requirements.txt
 
 COPY . /code/
 
-RUN python manage.py migrate
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD python3 manage.py makemigrations --noinput && \
+    python3 manage.py migrate --noinput && \
+    python manage.py runserver 0.0.0.0:8000
