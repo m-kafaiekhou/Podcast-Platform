@@ -110,9 +110,15 @@ services:
   elastic:
     image: elasticsearch:8.10.1
     container_name: elastic
-    mem_limit: 1g
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    mem_limit: 3g
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: 'false'
+      network.bind_host: 0.0.0.0
+      network.host: 0.0.0.0
     ports:
       - 9200:9200
     networks:
@@ -128,6 +134,8 @@ services:
       - elastic
     networks:
       - main
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elastic:9200
     restart: always
     volumes:
       - kibana_data:/usr/share/kibana/data
