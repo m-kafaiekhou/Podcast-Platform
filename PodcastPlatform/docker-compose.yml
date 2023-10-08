@@ -108,7 +108,7 @@ services:
     restart: always
 
   elastic:
-    image: elasticsearch:7.17.13
+    image: elasticsearch:8.10.1
     container_name: elastic
     mem_limit: 1g
     volumes:
@@ -120,7 +120,7 @@ services:
     restart: always
 
   kibana:
-    image: kibana:7.17.13
+    image: kibana:8.10.1
     container_name: kibana
     ports:
       - 5601:5601
