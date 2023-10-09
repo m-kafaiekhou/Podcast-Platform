@@ -71,8 +71,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'corsheaders.middleware.CorsMiddleware',
+    'core.middleware.RequestLoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -197,6 +199,9 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:
 CELERY_ACCEPT_CONTENT = ('json', )
 
 
+ELASTICSEARCH_HOSTS = ['http://elastic:9200']
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -207,6 +212,12 @@ LOGGING = {
             'filename': './log/celery_log.log',
             'formatter':'verbose',
         },
+
+        # 'elasticsearch': {
+        #     'class': 'core.handlers.ElasticsearchHandler',
+        #     'hosts': ELASTICSEARCH_HOSTS,
+        #     'index_name': 'django-requests',
+        # },
     },
     "formatters":{
         'verbose':{
@@ -220,6 +231,13 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+
+        # 'django.request': {
+        #     'handlers': ['elasticsearch'],
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
+
     },
 }
 
@@ -229,6 +247,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'elastic:9200'
+        'hosts': 'http://elastic:9200/'
     },
 }
