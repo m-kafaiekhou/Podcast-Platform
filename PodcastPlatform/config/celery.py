@@ -15,6 +15,10 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'podcast-parse-task': {
         'task': 'parser.tasks.podcast_parse_task',
-        'schedule': crontab(hour=3, minute=0),
+        # 'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
+        'schedule': crontab(minute="*/1"),
     },
 }
+
+# task_annotations = {'*': {'rate_limit': '1/m'}}
+# app.conf.task_default_rate_limit = '1/m'

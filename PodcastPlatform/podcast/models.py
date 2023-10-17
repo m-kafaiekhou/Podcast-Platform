@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 
-from parser.parsers import PodcastRSSParser
 from core.models import BaseModel
 from actions.models import Like, Comment, Subscription
 

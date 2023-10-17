@@ -31,7 +31,7 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         instance = serializer.save()
-        publish('registery', {'user': instance.id})
+        publish('registery', {'user': instance.id}, 'auth-notification')
         return instance
 
 
@@ -73,7 +73,7 @@ class LoginView(views.APIView):
             "refresh": refresh_token,
         }
 
-        publish('login', {'user': user.id}) # rabbit
+        publish('login', {'user': user.id}, 'auth-notification')
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -115,7 +115,7 @@ class RefreshTokenView(views.APIView):
             "refresh": refresh_token,
         }
 
-        publish('login', {'user': user_id})
+        publish('refreshtoken', {'user': user_id}, 'auth-notification')
 
         return Response(data, status=status.HTTP_201_CREATED)
 

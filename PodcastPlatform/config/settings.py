@@ -41,6 +41,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -197,6 +198,9 @@ JWT_CONF = {
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/1")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/2")
 CELERY_ACCEPT_CONTENT = ('json', )
+CELERY_RATE_LIMIT = 5
+CELERY_LOG_INDEX_PREFIX = 'task'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
 ELASTICSEARCH_HOSTS = ['http://elastic:9200']
@@ -208,8 +212,7 @@ LOGGING = {
     'handlers': {
         'celery': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': './log/celery_log.log',
+            'class': 'logging.StreamHandler',
             'formatter':'verbose',
         },
 
@@ -241,6 +244,8 @@ LOGGING = {
     },
 }
 
+LOG_INDEX_PREFIX = "api"
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -250,3 +255,6 @@ ELASTICSEARCH_DSL = {
         'hosts': 'http://elastic:9200/'
     },
 }
+
+
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip/')
