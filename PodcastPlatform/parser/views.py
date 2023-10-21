@@ -20,18 +20,27 @@ class ParseView(views.APIView):
 
         if valid:
             podcast = Podcast.objects.get_or_create(rss_url=serializer.data.get('rss_url'))
-            parse_feeds_to_db.delay(podcast[0].id)
+            if podcast[1]:
+                parse_feeds_to_db.delay(podcast[0].id, 'create')
+            else:
+                parse_feeds_to_db.delay(podcast[0].id, 'update')
 
             return Response(
                 data={"message": "Podcast related to your url has been updated/added"},
                 status=status.HTTP_201_CREATED
             )
-        podcast_parse_task.delay()
+        elif not serializer.data.get('rss_url'):
+            podcast_parse_task.delay()
 
-        return Response(
-            data={"message": "All podcasts have been updated"},
-            status=status.HTTP_201_CREATED
-        )
+            return Response(
+                data={"message": "All podcasts have been updated"},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                data={"message": "invalid url"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 

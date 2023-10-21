@@ -14,6 +14,7 @@ from pathlib import Path
 import sys
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -39,6 +40,8 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'rest_framework',
     'corsheaders',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
 ]
 
 LOCAL_APPS = [
@@ -69,8 +72,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'corsheaders.middleware.CorsMiddleware',
+    'core.middleware.RequestLoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -193,6 +198,22 @@ JWT_CONF = {
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/1")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/2")
 CELERY_ACCEPT_CONTENT = ('json', )
+CHUNK_SIZE = 5
+CELERY_LOG_INDEX_PREFIX = 'task'
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+MAX_TIMEOUT_IN_SECONDS = 60
+
+
+CELERY_BEAT_SCHEDULE = {
+    'podcast-parse-task': {
+        'task': 'parser.tasks.podcast_parse_task',
+        # 'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
+        'schedule': crontab(minute="*/10"),
+    },
+}
+
+
+ELASTICSEARCH_HOSTS = ['http://elastic:9200']
 
 
 LOGGING = {
@@ -201,10 +222,15 @@ LOGGING = {
     'handlers': {
         'celery': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': './log/celery_log.log',
+            'class': 'logging.StreamHandler',
             'formatter':'verbose',
         },
+
+        # 'elasticsearch': {
+        #     'class': 'core.handlers.ElasticsearchHandler',
+        #     'hosts': ELASTICSEARCH_HOSTS,
+        #     'index_name': 'django-requests',
+        # },
     },
     "formatters":{
         'verbose':{
@@ -218,8 +244,27 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+
+        # 'django.request': {
+        #     'handlers': ['elasticsearch'],
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
+
+    },
+}
+
+LOG_INDEX_PREFIX = "api"
+
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://elastic:9200/'
     },
 }
 
 
-CORS_ORIGIN_ALLOW_ALL = True
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip/')

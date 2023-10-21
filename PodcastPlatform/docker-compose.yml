@@ -2,10 +2,10 @@ version: '3.9'
 
 services:
   web:
+    container_name: web
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/code
+      - web_data:/usr/share/website/data
     networks:
       main:
     ports:
@@ -16,8 +16,10 @@ services:
       - CELERY_BACKEND=redis://redis:6379/2
     depends_on:
       - db
+    restart: always
 
   db:
+    container_name: db
     image: postgres:14
     volumes:
       - postgres_data:/usr/share/postgres/data
@@ -25,12 +27,14 @@ services:
       main:
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
+    restart: always
 
   celery:
+    container_name: celery
     restart: always
     build:
       context: .
-    command: celery -A config worker -l INFO
+    command: celery -A config worker -l INFO -B
     volumes:
       - celery_data:/usr/share/celery/data
     networks:
@@ -49,38 +53,18 @@ services:
       main:
     ports:
       - "6379:6379"
+    restart: always
 
-  celery-worker:
-    build:
-      context: .
-    container_name: celery-worker
-    entrypoint: celery
-    command: -A celery_app.celery worker --loglevel=info
+  celerybeat:
+    restart: always
+    build: .
     volumes:
       - celery_data:/usr/share/celery/data
-    links:
-      - redis
-    depends_on:
-      - redis
+    command: celery -A config beat -l INFO
     networks:
       - main
-
-  celery-beat:
-    build:
-      context: .
-    container_name: celery-beat
-    entrypoint: celery
-    command: -A config.celery beat --loglevel=info
-    volumes:
-      - celery_data:/usr/share/celery/data
-    links:
-      - celery-worker
-      - redis
     depends_on:
-      - celery-worker
-      - redis
-    networks:
-      - main
+      - celery
 
   rabbitmq:
     container_name: rabbitmq
@@ -108,11 +92,18 @@ services:
     restart: always
 
   elastic:
-    image: elasticsearch:7.17.13
+    image: elasticsearch:8.10.1
     container_name: elastic
-    mem_limit: 1g
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    mem_limit: 3g
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: 'false'
+      network.bind_host: 0.0.0.0
+      network.host: 0.0.0.0
+      action.destructive_requires_name: 'false'
     ports:
       - 9200:9200
     networks:
@@ -120,7 +111,7 @@ services:
     restart: always
 
   kibana:
-    image: kibana:7.17.13
+    image: kibana:8.10.1
     container_name: kibana
     ports:
       - 5601:5601
@@ -128,6 +119,8 @@ services:
       - elastic
     networks:
       - main
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elastic:9200
     restart: always
     volumes:
       - kibana_data:/usr/share/kibana/data
@@ -138,6 +131,7 @@ networks:
 
 
 volumes:
+  web_data:
   postgres_data:
   redis_data:
   rabbitmq_data:

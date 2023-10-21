@@ -1,5 +1,10 @@
 import requests
 from xml.etree import ElementTree as ET
+from django.contrib.contenttypes.models import ContentType
+
+from actions.models import Subscription
+from podcast.models import Podcast
+from accounts.producer import publish
 
 
 # response = requests.get('https://rss.art19.com/apology-line')
@@ -109,8 +114,10 @@ class PodcastRSSParser:
         return response.content
     
     def get_element_tree(self):
-        tree = ET.fromstring(self.get_rss_content_from_url())
-
+        try:
+            tree = ET.fromstring(self.get_rss_content_from_url())
+        except:
+            self.podcastModel.delete()
         return tree
     
     def get_channel_data_model_dict(self):
@@ -199,9 +206,32 @@ class PodcastRSSParser:
         return item_lst
 
     def create_episode_model_objects(self, instances):
-        self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        ep_lst = self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        
+        if ep_lst:
+            self.notify_subscribers()
 
     def execute(self):
         self.get_channel_data_model_dict()
         lst = self.get_episodes_model_obj_list()
         self.create_episode_model_objects(lst)
+
+    def get_podcast_ep_count(self):
+        return len(self.podcastModel.__class__.objects.all())
+
+    def get_subed_users_for_podcast(self):
+        podcast_ct = ContentType.objects.get_for_model(Podcast)
+        subscriptions = Subscription.objects.select_related('user').filter(content_type=podcast_ct, object_id=self.podcastModel.id)
+        users = [subscription.user for subscription in subscriptions]
+
+        return users
+
+    def notify_subscribers(self):
+        users = self.get_subed_users_for_podcast()
+        body = {
+            "podcast": self.podcastModel.id,
+            "users": [user.id for user in users]
+        }
+        publish('None', body, 'podcast_update')
+        
+

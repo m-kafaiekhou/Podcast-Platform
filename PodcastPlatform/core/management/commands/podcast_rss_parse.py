@@ -8,7 +8,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            podcast_parse_task.delay()
+            res = podcast_parse_task.delay()
+            
                 
             self.stdout.write(
                     self.style.SUCCESS(
