@@ -14,6 +14,7 @@ from pathlib import Path
 import sys
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -41,7 +42,6 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
-    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -198,9 +198,19 @@ JWT_CONF = {
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", default="redis://redis:6379/1")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:6379/2")
 CELERY_ACCEPT_CONTENT = ('json', )
-CELERY_RATE_LIMIT = 5
+CHUNK_SIZE = 5
 CELERY_LOG_INDEX_PREFIX = 'task'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+MAX_TIMEOUT_IN_SECONDS = 60
+
+
+CELERY_BEAT_SCHEDULE = {
+    'podcast-parse-task': {
+        'task': 'parser.tasks.podcast_parse_task',
+        # 'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
+        'schedule': crontab(minute="*/10"),
+    },
+}
 
 
 ELASTICSEARCH_HOSTS = ['http://elastic:9200']
