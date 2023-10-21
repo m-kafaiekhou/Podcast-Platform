@@ -33,15 +33,15 @@ class CustomBaseTask(Task):
         message = f'rerunning Task {self.name}'
         doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'exc': einfo, 'message': message, 'status': 'retry', 'event': f'celery_task_{job}_retry'}
         self.es.index(index=f'{settings.CELERY_LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', body=doc)
-        logger.warning(message)
+        # logger.warning(message)
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         # super().on_failure(exc=exc, task_id=task_id, *args, **kwargs)
         job = self.job if hasattr(self, 'job') else 'update'
         message = f'Task {self.name} failed'
-        doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'exc': einfo, 'message': message, 'status': 'failure', 'event': f'celery_task_{job}_failure'}
+        doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'exc': str(einfo), 'message': message, 'status': 'failure', 'event': f'celery_task_{job}_failure'}
         self.es.index(index=f'{settings.CELERY_LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', body=doc)
-        logger.critical(message)
+        # logger.critical(message)
 
     def on_success(self, retval, task_id, args, kwargs):
         # super().on_success(retval=retval, task_id=task_id, *args, **kwargs)
@@ -49,11 +49,12 @@ class CustomBaseTask(Task):
         message = f'Task {self.name} ran successfully'
         doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'message': message, 'status': 'success', 'event': f'celery_task_{job}_success'}
         self.es.index(index=f'{settings.CELERY_LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', body=doc)
-        logger.info(message)
+        # logger.info(message)
 
 
 @shared_task(base=CustomBaseTask, bind=True)
 def parse_feeds_to_db(self, podcast_pk, job="update"):
+    print('second' * 30)
     self.job = job
     podcast_obj = Podcast.objects.get(pk=podcast_pk)
     parser = PodcastRSSParser(podcast_obj, PodcastEpisode)
@@ -62,10 +63,11 @@ def parse_feeds_to_db(self, podcast_pk, job="update"):
 
 @shared_task(base=CustomBaseTask, bind=True)
 def podcast_parse_task(self):
+    print('main' * 30)
     podcasts = Podcast.objects.all()
 
-    tasks = [parse_feeds_to_db.s(podcast_pk=podcast.pk) for podcast in podcasts]
-    task_groups = divide_tasks(tasks, settings.CELERY_RATE_LIMIT)
+    tasks = [parse_feeds_to_db.si(podcast_pk=podcast.pk) for podcast in podcasts]
+    task_groups = divide_tasks(tasks, settings.CHUNK_SIZE)
 
     initial_chain = chain()
     for task_group in task_groups:
