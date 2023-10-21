@@ -189,7 +189,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 JWT_CONF = {
-    'TOKEN_LIFETIME_HOURS': 1,
+    'TOKEN_LIFETIME_HOURS': 24,
     'REFRESH_TOKEN_LIFETIME_HOURS': 192,
     'TOKEN_PREFIX': 'Bearer',
 }
@@ -207,8 +207,8 @@ MAX_TIMEOUT_IN_SECONDS = 60
 CELERY_BEAT_SCHEDULE = {
     'podcast-parse-task': {
         'task': 'parser.tasks.podcast_parse_task',
-        # 'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
-        'schedule': crontab(minute="*/10"),
+        'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
+        # 'schedule': crontab(minute="*/10"),
     },
 }
 
