@@ -6,6 +6,7 @@ from actions.models import Subscription
 from podcast.models import Podcast
 from accounts.producer import publish
 
+
 # response = requests.get('https://rss.art19.com/apology-line')
 # print(type(response.content))
 
@@ -232,4 +233,5 @@ class PodcastRSSParser:
             "users": [user.id for user in users]
         }
         publish('None', body, 'podcast_update')
-        print(body)
+        
+
