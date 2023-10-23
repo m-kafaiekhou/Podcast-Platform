@@ -60,7 +60,7 @@ services:
     build: .
     volumes:
       - celery_data:/usr/share/celery/data
-    command: celery -A config beat -l INFO
+    command: celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
     networks:
       - main
     depends_on:
