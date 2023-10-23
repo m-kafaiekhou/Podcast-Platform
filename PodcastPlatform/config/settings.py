@@ -40,6 +40,7 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'rest_framework',
     'corsheaders',
+    'django_celery_beat',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
 ]
@@ -200,17 +201,17 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", default="redis://redis:
 CELERY_ACCEPT_CONTENT = ('json', )
 CHUNK_SIZE = 5
 CELERY_LOG_INDEX_PREFIX = 'task'
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 MAX_TIMEOUT_IN_SECONDS = 60
 
 
-CELERY_BEAT_SCHEDULE = {
-    'podcast-parse-task': {
-        'task': 'parser.tasks.podcast_parse_task',
-        'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
-        # 'schedule': crontab(minute="*/10"),
-    },
-}
+# CELERY_BEAT_SCHEDULE = {
+#     'podcast-parse-task': {
+#         'task': 'parser.tasks.podcast_parse_task',
+#         # 'schedule': crontab(hour=23, minute=30), # ~3:00 AM Tehran
+#         'schedule': crontab(minute="*/1"),
+#     },
+# }
 
 
 ELASTICSEARCH_HOSTS = ['http://elastic:9200']
