@@ -105,6 +105,7 @@ class RefreshTokenView(views.APIView):
             return Response(data={"message": "invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
         user_id = refresh_token.get('user_identifier')
+        old_jti = refresh_token.get('jti')
 
         access_token, refresh_token = JWTAuthentication.create_jwt(user_id)
 
@@ -114,6 +115,8 @@ class RefreshTokenView(views.APIView):
             "access": access_token,
             "refresh": refresh_token,
         }
+
+        delete_cache(old_jti)
 
         publish('refreshtoken', {'user': user_id}, 'auth-notification')
 
