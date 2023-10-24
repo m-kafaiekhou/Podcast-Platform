@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
-from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache
+from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache, get_otp
 from rest_framework.exceptions import AuthenticationFailed
 from .authentications import JWTAuthentication
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
 from .backends import EmailOrUsernameModelBackend
 from rest_framework import generics, status, permissions, views
 from .producer import publish
+from django.core.mail import send_mail
+from .models import CustomUser
+from django.core.cache import cache
 
 
 User = get_user_model()
@@ -149,3 +153,30 @@ class AuthenticatedView(views.APIView):
 
     def get(self, request):
         return Response(data={"message": "you are authenticated"}, status=status.HTTP_200_OK)
+    
+
+class ForgotPasswordView():
+    serializer_class = ForgotPasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        data = self.serializer_class(data=request.data)
+        data.is_valid(raise_exception=True)
+
+        if CustomUser.objects.filter(email=data['email']).exists():
+            otp = get_otp()
+            cache.set(key=f'{data["email"]}', value=f'{otp}', timeout=120)
+            send_mail(
+                'Password reset request',
+                f'your otp code is {otp}.',
+                settings.EMAIL_HOST_USER,
+                [data['email']],
+                fail_silently=False,
+                )
+            message = {'detail': 'Success Message'}
+            return Response(message, status=status.HTTP_200_OK)
+        else:
+            message = {'detail': 'Some Error Message'}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+class ResetPasswordView():
+    serializer_class = ResetPasswordSerializer
