@@ -5,7 +5,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed, ParseError
+
 from .utils import check_cache, encode_payload, decode_token
+from .exceptions import TokenExpired
 
 User = get_user_model()
 
@@ -28,7 +30,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise ParseError()
 
         if not check_cache(payload.get('jti')):
-            raise AuthenticationFailed('user not in whitelist')
+            print('not in cache'*10)
+            raise TokenExpired()
 
         user_id = payload.get('user_identifier')
         if user_id is None:
