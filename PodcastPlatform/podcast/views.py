@@ -50,13 +50,13 @@ class GetRecommendationsView(generics.ListAPIView):
         if user.is_authenticated:
             self.queryset = self.get_podcast_based_on_likes(user)
         else:
-            self.queryset = Podcast.objects.annotate(num_likes=Count('podcastepisode__like')).order_by('-num_likes')
+            self.queryset = Podcast.objects.annotate(num_likes=Count('podcastepisode__likes')).order_by('-num_likes')
         
         return super().get_queryset()
 
     def get_podcast_based_on_likes(self, user):
         podcasts = Podcast.objects.all()
-        podcast_episodes = PodcastEpisode.objects.select_related("podcast__category").prefetch_related('like').filter(like__user=user)
+        podcast_episodes = PodcastEpisode.objects.select_related("podcast").prefetch_related('likes').filter(likes__user_id=user.id)
         
         rate_dict = {}
 
