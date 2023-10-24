@@ -190,7 +190,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 JWT_CONF = {
-    'TOKEN_LIFETIME_HOURS': 24,
+    'TOKEN_LIFETIME_HOURS': 0.01,
     'REFRESH_TOKEN_LIFETIME_HOURS': 192,
     'TOKEN_PREFIX': 'Bearer',
 }
@@ -268,4 +268,9 @@ ELASTICSEARCH_DSL = {
 }
 
 
-GEOIP_PATH = os.path.join(BASE_DIR, 'geoip/')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
