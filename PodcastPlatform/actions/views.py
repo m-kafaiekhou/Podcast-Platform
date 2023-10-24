@@ -9,6 +9,7 @@ from .models import Like, Comment, Bookmark, Subscription
 from .serializers import CommentSerializer
 from podcast.models import Podcast, PodcastEpisode
 
+
 class LikeView(InteractionMixin, APIView):
     action_model = Like
     model = PodcastEpisode
