@@ -1,3 +1,4 @@
+import random
 from django.core.cache import cache
 from datetime import datetime
 import jwt
@@ -16,6 +17,7 @@ def cache_refresh_token(refresh_token):
 
 def check_cache(jti):
     c = cache.get(f'{jti}')
+    print(c, "*"*100)
     if bool(c):
         return c
     return None
@@ -60,3 +62,7 @@ def encode_payload(payload):
         decrypted access token
     """
     return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+
+def get_otp():
+    return random.randint(100000, 999999)
