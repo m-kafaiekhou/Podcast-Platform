@@ -28,7 +28,8 @@ def delete_cache(key):
 def validate_cached_token(refresh_token):
     jti = refresh_token.get('jti')
     cached_token = check_cache(jti)
-    if cached_token and cached_token == refresh_token['user_identifier']:
+    
+    if cached_token and cached_token == str(refresh_token['user_identifier']):
         return True
     return False
 
