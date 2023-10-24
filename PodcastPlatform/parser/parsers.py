@@ -206,9 +206,11 @@ class PodcastRSSParser:
         return item_lst
 
     def create_episode_model_objects(self, instances):
-        ep_lst = self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        init_count = self.get_podcast_ep_count()
+        self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        final_count = self.get_podcast_ep_count()
         
-        if ep_lst:
+        if init_count < final_count:
             self.notify_subscribers()
 
     def execute(self):
@@ -217,7 +219,7 @@ class PodcastRSSParser:
         self.create_episode_model_objects(lst)
 
     def get_podcast_ep_count(self):
-        return len(self.podcastModel.__class__.objects.all())
+        return len(self.episodeModel.objects.filter(podcast=self.podcastModel))
 
     def get_subed_users_for_podcast(self):
         podcast_ct = ContentType.objects.get_for_model(Podcast)
