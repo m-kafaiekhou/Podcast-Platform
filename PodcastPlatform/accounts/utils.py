@@ -11,7 +11,6 @@ def cache_refresh_token(refresh_token):
     exp_date = refresh_token.get("exp")
     iat = refresh_token.get('iat')
     timeout = exp_date - iat
-
     cache.set(key=f'{jti}', value=f'{user_id}', timeout=timeout)
 
 
