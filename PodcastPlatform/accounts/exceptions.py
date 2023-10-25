@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 class TokenExpired(APIException):
     def __init__(self):
-        detail = "Token expired"
+        detail = _("Token expired")
         super().__init__(detail, 470)
 
     status_code = 470
