@@ -3,6 +3,7 @@ import pika
 import django
 from sys import path
 from os import environ
+from django.utils.translation import gettext_lazy as _
 
 from .models import Notification
 from podcast.models import Podcast
@@ -19,13 +20,13 @@ def callback(ch, method, properties, body):
     user_id = data['user']
 
     if properties.content_type == 'login':
-        Notification.objects.create(title='l', user_id=user_id, message=f'user with id {user_id} logged in')
+        Notification.objects.create(title='l', user_id=user_id, message=_(f'user with id {user_id} logged in'))
     
     elif properties.content_type == 'registery':
-        Notification.objects.create(title='r', user_id=user_id, message=f'user with id {user_id} just registered')
+        Notification.objects.create(title='r', user_id=user_id, message=_(f'user with id {user_id} just registered'))
         
     elif properties.content_type == 'refreshtoken':
-        Notification.objects.create(title='t', user_id=user_id, message=f'user with id {user_id} requested for refresh token')
+        Notification.objects.create(title='t', user_id=user_id, message=_(f'user with id {user_id} requested for refresh token'))
 
 
 def callback_podcast_update(ch, method, properties, body):
@@ -37,7 +38,7 @@ def callback_podcast_update(ch, method, properties, body):
     notif_lst = []
 
     for user in users:
-        notif = Notification(title='o', user_id=user, message=f'podcast {podcast.title} added new episodes')
+        notif = Notification(title='o', user_id=user, message=_(f'podcast {podcast.title} added new episodes'))
         notif_lst.append(notif)
 
     ns = Notification.objects.bulk_create(notif_lst)

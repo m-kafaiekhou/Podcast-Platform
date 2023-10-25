@@ -1,6 +1,7 @@
 import requests
 from xml.etree import ElementTree as ET
 from django.contrib.contenttypes.models import ContentType
+from .exceptions import InvalidRSSLink
 
 from actions.models import Subscription
 from podcast.models import Podcast
@@ -118,6 +119,7 @@ class PodcastRSSParser:
             tree = ET.fromstring(self.get_rss_content_from_url())
         except:
             self.podcastModel.delete()
+            raise InvalidRSSLink()
         return tree
     
     def get_channel_data_model_dict(self):
@@ -150,6 +152,10 @@ class PodcastRSSParser:
             'image_link': root.findtext('channel/image/link'),
             'image_title': root.findtext('channel/image/title'),
             }
+        
+        if data_dict['title'] is None:
+            self.podcastModel.delete()
+            raise InvalidRSSLink()
         
         for key, val in data_dict.items():
             setattr(self.podcastModel, key, val)
@@ -206,9 +212,11 @@ class PodcastRSSParser:
         return item_lst
 
     def create_episode_model_objects(self, instances):
-        ep_lst = self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        init_count = self.get_podcast_ep_count()
+        self.episodeModel.objects.bulk_create(instances, ignore_conflicts=True)
+        final_count = self.get_podcast_ep_count()
         
-        if ep_lst:
+        if init_count < final_count:
             self.notify_subscribers()
 
     def execute(self):
@@ -217,7 +225,7 @@ class PodcastRSSParser:
         self.create_episode_model_objects(lst)
 
     def get_podcast_ep_count(self):
-        return len(self.podcastModel.__class__.objects.all())
+        return len(self.episodeModel.objects.filter(podcast=self.podcastModel))
 
     def get_subed_users_for_podcast(self):
         podcast_ct = ContentType.objects.get_for_model(Podcast)

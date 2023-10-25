@@ -1,3 +1,4 @@
+import sys
 from celery import chain, shared_task, Task, group
 from celery.exceptions import Retry
 import logging
@@ -7,6 +8,7 @@ from datetime import datetime
 
 from parser.parsers import PodcastRSSParser
 from podcast.models import Podcast, PodcastEpisode
+from .exceptions import InvalidRSSLink
 
 
 logger = logging.getLogger('celery-log')  # TODO : __name__
@@ -20,6 +22,7 @@ def divide_tasks(tasks, div):
     
 class CustomBaseTask(Task):
     autoretry_for = (Exception,)
+    
     retry_kwargs = {'max_retries': 5}
     retry_backoff = 2
     retry_jitter=True
@@ -45,21 +48,33 @@ class CustomBaseTask(Task):
 
     def on_success(self, retval, task_id, args, kwargs):
         # super().on_success(retval=retval, task_id=task_id, *args, **kwargs)
-        job = self.job if hasattr(self, 'job') else 'update'
-        message = f'Task {self.name} ran successfully'
-        doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'message': message, 'status': 'success', 'event': f'celery_task_{job}_success'}
-        self.es.index(index=f'{settings.CELERY_LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', body=doc)
-        # logger.info(message)
+        manual_fail = self.manual_fail if hasattr(self, 'manual_fail') else False
 
+        if not manual_fail:
+            job = self.job if hasattr(self, 'job') else 'update'
+            message = f'Task {self.name} ran successfully'
+            doc = {'timestamp': datetime.now().strftime("%Y-%m-%dT%H:%M"), 'task_id': task_id, 'task_name': self.name, 'message': message, 'status': 'success', 'event': f'celery_task_{job}_success'}
+            self.es.index(index=f'{settings.CELERY_LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', body=doc)
+            # logger.info(message)
+        
 
 @shared_task(base=CustomBaseTask, bind=True)
 def parse_feeds_to_db(self, podcast_pk, job="update"):
     print('second' * 30)
     self.job = job
     podcast_obj = Podcast.objects.get(pk=podcast_pk)
-    parser = PodcastRSSParser(podcast_obj, PodcastEpisode)
-    parser.execute()
 
+    try:
+        parser = PodcastRSSParser(podcast_obj, PodcastEpisode)
+        parser.execute()
+    except InvalidRSSLink as exc:
+        self.manual_fail = True
+        task_id = self.request.id
+        args = self.request.args
+        kwargs = self.request.kwargs
+        einfo = sys.exc_info()
+        self.on_failure(exc, task_id, args, kwargs, einfo)
+        
 
 @shared_task(base=CustomBaseTask, bind=True)
 def podcast_parse_task(self):

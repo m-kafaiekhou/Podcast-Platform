@@ -27,12 +27,14 @@ class RequestLoggerMiddleware:
         }
 
         response = self.get_response(request)
-        user = request.user if hasattr(request, "user") else None
+        
+        if not request.META.get("exception", False):
+            user = request.user if hasattr(request, "user") else None
 
-        log_data['user'] = user.id if user else None
-        log_data['status_code'] = response.status_code
+            log_data['user'] = user.id if user else None
+            log_data['status_code'] = response.status_code
 
-        self.es.index(index=f'{settings.LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', document=log_data)
+            self.es.index(index=f'{settings.LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', document=log_data)
 
         return response
 
@@ -51,6 +53,8 @@ class RequestLoggerMiddleware:
             'exception_message': exception.message if hasattr(exception, "message") else str(exception),
             'event': "api_exc",
         }
+
+        request.META["exception"] = True
 
         self.es.index(index=f'{settings.LOG_INDEX_PREFIX}_{datetime.now().strftime("%Y-%m-%d")}', document=log_data)
 

@@ -10,7 +10,7 @@ class BaseModel(models.Model):
         abstract = True
 
     objects = BaseManager()
-
+                        
     created_at = models.DateTimeField(auto_now_add=True, editable=False, verbose_name=_('Created at'))
 
     deleted_at = models.DateTimeField(

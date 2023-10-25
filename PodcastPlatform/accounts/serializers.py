@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import CustomUser
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from django.utils.translation import gettext_lazy as _
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -33,7 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+            raise serializers.ValidationError({"password": _("Password fields didn't match.")})
 
         return attrs
 
@@ -55,3 +57,32 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=264)
     password = serializers.CharField(max_length=128)
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, validators=[validate_password])
+    password2 = serializers.CharField(required=True)
+    otp = serializers.CharField()
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": _("Password fields didn't match.")})
+
+        return attrs
+    
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, validators=[validate_password])
+    password2 = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": _("Password fields didn't match.")})
+
+        return attrs
