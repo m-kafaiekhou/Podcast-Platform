@@ -41,6 +41,9 @@ class JWTAuthentication(authentication.BaseAuthentication):
         user = User.objects.filter(id=user_id).first()
         if user is None:
             raise NotFound(_('User not found'))
+        
+        if not user.is_active:
+            raise NotAcceptable("User is not active")
 
         return user, payload
 
