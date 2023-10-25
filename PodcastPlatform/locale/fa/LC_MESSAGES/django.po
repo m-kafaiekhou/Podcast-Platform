@@ -1,0 +1,228 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-25 22:23+0330\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: accounts/authentications.py:19
+msgid "HTTP_AUTHORIZATION"
+msgstr ""
+
+#: accounts/authentications.py:21
+msgid "Token not available"
+msgstr "توکن در دسترس نیست"
+
+#: accounts/authentications.py:28
+msgid "Invalid signature"
+msgstr "امضای نامعتبر است"
+
+#: accounts/authentications.py:31
+msgid "Expired Signiture"
+msgstr "امضای منقضی شده است"
+
+#: accounts/authentications.py:35
+msgid "Token not in white list"
+msgstr "توکن در لیست سفید نیست"
+
+#: accounts/authentications.py:37
+msgid "user_identifier"
+msgstr "شناسه کاربر"
+
+#: accounts/authentications.py:39
+msgid "User identifier not found in JWT"
+msgstr "شناسه کاربر در JWT یافت نشد"
+
+#: accounts/authentications.py:43
+msgid "User not found"
+msgstr "کاربر یافت نشد"
+
+#: accounts/consumer.py:23
+#, python-brace-format
+msgid "user with id {user_id} logged in"
+msgstr "کاربر با شناسه {user_id} وارد شد"
+
+#: accounts/consumer.py:26
+#, python-brace-format
+msgid "user with id {user_id} just registered"
+msgstr "کاربر با شناسه {user_id} تازه ثبت نام کرده است"
+
+#: accounts/consumer.py:29
+#, python-brace-format
+msgid "user with id {user_id} requested for refresh token"
+msgstr "کاربر با شناسه {user_id} درخواست توکن تازه داده است"
+
+#: accounts/consumer.py:41
+#, python-brace-format
+msgid "podcast {podcast.title} added new episodes"
+msgstr "پادکست {podcast.title} قسمت‌های جدیدی اضافه کرده است"
+
+#: accounts/exceptions.py:7 accounts/exceptions.py:11
+msgid "Token expired"
+msgstr "توکن منقضی شده است"
+
+#: accounts/models.py:15
+msgid "username"
+msgstr "نام کاربری"
+
+#: accounts/models.py:19
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "الزامی است. حداکثر ۱۵۰ کاراکتر. فقط حروف، اعداد و @/./+/-/_ مجاز هستند."
+
+#: accounts/models.py:23
+msgid "A user with that username already exists."
+msgstr "یک کاربر با این نام کاربری در حال حاضر وجود دارد."
+
+#: accounts/models.py:26
+msgid "Email"
+msgstr "ایمیل"
+
+#: accounts/models.py:28
+msgid "Phone Number"
+msgstr "شماره تلفن"
+
+#: accounts/models.py:29
+msgid "First Name"
+msgstr "نام"
+
+#: accounts/models.py:30
+msgid "Last Name"
+msgstr "نام خانوادگی"
+
+#: accounts/models.py:32
+msgid "Activation Status"
+msgstr "وضعیت فعال‌سازی"
+
+#: accounts/models.py:33
+msgid "Staff Status"
+msgstr "وضعیت کارمند"
+
+#: accounts/models.py:34
+msgid "Superuser Status"
+msgstr "وضعیت سوپرکاربر"
+
+#: accounts/models.py:39
+msgid "User"
+msgstr "کاربر"
+
+#: accounts/models.py:40
+msgid "Users"
+msgstr "کاربران"
+
+#: accounts/models.py:55
+msgid "Role"
+msgstr "نقش"
+
+#: accounts/serializers.py:38 accounts/serializers.py:74
+#: accounts/serializers.py:86
+msgid "Password fields didn't match."
+msgstr "رمز عبور و تکرار آن با هم مطابقت ندارند."
+
+#: accounts/views.py:71
+msgid "Invalid credentials"
+msgstr "اطلاعات ورودی نامعتبر است"
+
+#: accounts/views.py:104
+msgid "user already authenticated"
+msgstr "کاربر قبلاً تأیید شده است"
+
+#: accounts/views.py:111
+msgid "invalid refresh token"
+msgstr "توکن تازه‌سازی نامعتبر است"
+
+#: accounts/views.py:157
+msgid "you are authenticated"
+msgstr "شما تأیید شده‌اید"
+
+#: accounts/views.py:172
+msgid "Password reset request"
+msgstr "درخواست بازیابی رمز عبور"
+
+#: accounts/views.py:173
+#, python-brace-format
+msgid "your otp code is {otp}."
+msgstr "کد otp شما {otp} است."
+
+#: accounts/views.py:178
+msgid "Success"
+msgstr "موفقیت"
+
+#: accounts/views.py:182
+msgid "Error"
+msgstr "خطا"
+
+#: accounts/views.py:201 accounts/views.py:225
+msgid "password reset successfully. "
+msgstr "رمز عبور با موفقیت بازیابی شد."
+
+#: accounts/views.py:204 accounts/views.py:228
+msgid "OTP did not matched"
+msgstr "کد otp مطابقت ندارد"
+
+#: accounts/views.py:207
+msgid "User not active"
+msgstr "کاربر فعال نیست"
+
+#: actions/views.py:49
+msgid "Your object has been updated successfully ."
+msgstr "شیء شما با موفقیت به‌روزرسانی شد."
+
+#: config/settings.py:177
+msgid "Persian"
+msgstr "فارسی"
+
+#: config/settings.py:178
+msgid "English"
+msgstr "انگلیسی"
+
+#: core/models.py:14
+msgid "Created at"
+msgstr "ایجاد شده در"
+
+#: core/models.py:20
+msgid "Deleted datetime"
+msgstr "تاریخ حذف"
+
+#: core/models.py:21
+msgid "This is deleted datetime"
+msgstr "این تاریخ حذف شده است"
+
+#: core/models.py:28
+msgid "Restored Datetime"
+msgstr "تاریخ بازیابی"
+
+#: core/models.py:29
+msgid "This is Restored Datetime"
+msgstr "این تاریخ بازیابی شده است"
+
+#: core/models.py:36
+msgid "Deleted status"
+msgstr "وضعیت حذف"
+
+#: core/models.py:37
+msgid "This is deleted status"
+msgstr "این وضعیت حذف شده است"
+
+#: parser/views.py:30
+msgid "Podcast related to your url has been updated/added"
+msgstr "پادکست مرتبط با آدرس شما به‌روزرسانی/افزوده شده است"
+
+#: parser/views.py:37
+msgid "All podcasts have been updated"
+msgstr "تمام پادکست‌ها به‌روزرسانی شده‌اند"
+
+#: parser/views.py:42
+msgid "invalid url"
+msgstr "آدرس نامعتبر است"
