@@ -24,7 +24,8 @@ class EmailOrUsernameModelBackend(ModelBackend):
         # Test whether any matched user has the provided password:
         for user in users:
             if user.check_password(password):
-                return user
+                if user.is_active:
+                    return user
         if not users:
             user_model().set_password(password)
 
