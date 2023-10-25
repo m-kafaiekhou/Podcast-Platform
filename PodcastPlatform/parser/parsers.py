@@ -1,6 +1,7 @@
 import requests
 from xml.etree import ElementTree as ET
 from django.contrib.contenttypes.models import ContentType
+from .exceptions import InvalidRSSLink
 
 from actions.models import Subscription
 from podcast.models import Podcast
@@ -118,6 +119,7 @@ class PodcastRSSParser:
             tree = ET.fromstring(self.get_rss_content_from_url())
         except:
             self.podcastModel.delete()
+            raise InvalidRSSLink()
         return tree
     
     def get_channel_data_model_dict(self):
@@ -150,6 +152,10 @@ class PodcastRSSParser:
             'image_link': root.findtext('channel/image/link'),
             'image_title': root.findtext('channel/image/title'),
             }
+        
+        if data_dict['title'] is None:
+            self.podcastModel.delete()
+            raise InvalidRSSLink()
         
         for key, val in data_dict.items():
             setattr(self.podcastModel, key, val)
