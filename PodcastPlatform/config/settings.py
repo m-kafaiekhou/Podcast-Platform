@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = [
     'django_celery_beat',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
+    'rosetta',
 ]
 
 LOCAL_APPS = [
@@ -62,12 +63,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+
 INSTALLED_APPS += THIRD_PARTY_APPS
 INSTALLED_APPS += LOCAL_APPS
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -159,11 +163,20 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
+
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGES = [
+    ('fa', _('Persian')),
+    ('en', _('English')),
+]
 
 
 # Static files (CSS, JavaScript, Images)
