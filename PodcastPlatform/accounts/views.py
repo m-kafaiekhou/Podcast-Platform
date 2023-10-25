@@ -1,16 +1,18 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache, get_otp
+from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache, get_otp, check_cache
 from rest_framework.exceptions import AuthenticationFailed
 from .authentications import JWTAuthentication
-from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
+from .serializers import ChangePasswordSerializer, RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
 from .backends import EmailOrUsernameModelBackend
 from rest_framework import generics, status, permissions, views
 from .producer import publish
 from django.core.mail import send_mail
 from .models import CustomUser
 from django.core.cache import cache
+from django.utils.translation import gettext_lazy as _
 
 
 User = get_user_model()
@@ -66,7 +68,7 @@ class LoginView(views.APIView):
         user = backend.authenticate(request, username=username, password=password)
 
         if user is None:
-            return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': _('Invalid credentials')}, status=status.HTTP_400_BAD_REQUEST)
 
         access_token, refresh_token = JWTAuthentication.create_jwt(user.id)
 
@@ -99,14 +101,14 @@ class RefreshTokenView(views.APIView):
         except AuthenticationFailed:
             pass
         else:
-            return Response(data={"message": "user already authenticated"}, status=status.HTTP_302_FOUND)
+            return Response(data={"message": _("user already authenticated")}, status=status.HTTP_302_FOUND)
 
         refresh_token = request.data.get('refresh_token')
 
         refresh_token = decode_token(refresh_token)
 
         if not validate_cached_token(refresh_token):
-            return Response(data={"message": "invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"message": _("invalid refresh token")}, status=status.HTTP_400_BAD_REQUEST)
 
         user_id = refresh_token.get('user_identifier')
         old_jti = refresh_token.get('jti')
@@ -152,31 +154,77 @@ class AuthenticatedView(views.APIView):
     authentication_classes = (JWTAuthentication, )
 
     def get(self, request):
-        return Response(data={"message": "you are authenticated"}, status=status.HTTP_200_OK)
+        return Response(data={"message": _("you are authenticated")}, status=status.HTTP_200_OK)
     
 
-class ForgotPasswordView():
+class ForgotPasswordView(views.APIView):
     serializer_class = ForgotPasswordSerializer
 
     def post(self, request, *args, **kwargs):
-        data = self.serializer_class(data=request.data)
-        data.is_valid(raise_exception=True)
-
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.data
+        print(data['email'], data)
         if CustomUser.objects.filter(email=data['email']).exists():
             otp = get_otp()
             cache.set(key=f'{data["email"]}', value=f'{otp}', timeout=120)
             send_mail(
-                'Password reset request',
-                f'your otp code is {otp}.',
+                _('Password reset request'),
+                _(f'your otp code is {otp}.'),
                 settings.EMAIL_HOST_USER,
                 [data['email']],
                 fail_silently=False,
                 )
-            message = {'detail': 'Success Message'}
+            message = {'detail': _('Success')}
             return Response(message, status=status.HTTP_200_OK)
+        
         else:
-            message = {'detail': 'Some Error Message'}
+            message = {'detail': _('Error')}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-class ResetPasswordView():
+
+class ResetPasswordView(views.APIView):
     serializer_class = ResetPasswordSerializer
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.data
+        user = get_object_or_404(CustomUser, email=data['email'])
+
+        if user.is_active:
+            print(data['otp'], check_cache(data['email']))
+            otp = check_cache(data['email'])
+            if otp and otp == data['otp']:
+                user.set_password(data['password'])
+                user.save()
+                return Response(_('password reset successfully. '), status=status.HTTP_201_CREATED)
+            
+            else:
+                message = {'detail': _('OTP did not matched')}
+                return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            message = {'detail': _('User not active')}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(views.APIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (JWTAuthentication, )
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.data
+        user = request.user
+
+        if user.check_password(data['old_password']):
+            user.set_password(data['password'])
+            user.save()
+            return Response(_('password reset successfully. '), status=status.HTTP_201_CREATED)
+        
+        else:
+            message = {'detail': _('OTP did not matched')}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        
