@@ -1,0 +1,140 @@
+version: '3.9'
+
+services:
+  web:
+    container_name: web
+    build: .
+    volumes:
+      - web_data:/usr/share/website/data
+    networks:
+      main:
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/1
+      - CELERY_BACKEND=redis://redis:6379/2
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    container_name: db
+    image: postgres:14
+    volumes:
+      - postgres_data:/usr/share/postgres/data
+    networks:
+      main:
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+    restart: always
+
+  celery:
+    container_name: celery
+    restart: always
+    build:
+      context: .
+    command: celery -A config worker -l INFO -B
+    volumes:
+      - celery_data:/usr/share/celery/data
+    networks:
+      main:
+    depends_on:
+      - db
+      - redis
+      - web
+
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+    volumes:
+      - redis_data:/usr/share/redis/data
+    networks:
+      main:
+    ports:
+      - "6379:6379"
+    restart: always
+
+  celerybeat:
+    restart: always
+    build: .
+    volumes:
+      - celery_data:/usr/share/celery/data
+    command: celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    networks:
+      - main
+    depends_on:
+      - celery
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-alpine
+    networks:
+      - main
+    volumes:
+      - rabbitmq_data:/usr/share/rabbitmq/data
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  consumers:
+    container_name: consumers
+    build: .
+    command: python manage.py launch_consumers
+    volumes:
+      - rabbitmq_data:/usr/share/rabbitmq/data
+    networks:
+      - main
+    depends_on:
+      - rabbitmq
+      - web
+    restart: always
+
+  elastic:
+    image: elasticsearch:8.10.1
+    container_name: elastic
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    mem_limit: 3g
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: 'false'
+      network.bind_host: 0.0.0.0
+      network.host: 0.0.0.0
+      action.destructive_requires_name: 'false'
+    ports:
+      - 9200:9200
+    networks:
+      - main
+    restart: always
+
+  kibana:
+    image: kibana:8.10.1
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      - elastic
+    networks:
+      - main
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elastic:9200
+    restart: always
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+
+
+networks:
+  main:
+
+
+volumes:
+  web_data:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  elasticsearch_data:
+  kibana_data:
+  celery_data:
