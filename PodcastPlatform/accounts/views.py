@@ -1,11 +1,24 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, resolve_url
 from rest_framework.response import Response
-from .utils import cache_refresh_token, validate_cached_token, decode_token, delete_cache, get_otp, check_cache
+from .utils import (
+        cache_refresh_token,
+        validate_cached_token,
+        decode_token,
+        delete_cache,
+        get_otp, check_cache,
+        gen_confirmation_link
+        )
 from rest_framework.exceptions import AuthenticationFailed
 from .authentications import JWTAuthentication
-from .serializers import ChangePasswordSerializer, RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
+from .serializers import (
+        ChangePasswordSerializer,
+        RegisterSerializer,
+        LoginSerializer,
+        ForgotPasswordSerializer,
+        ResetPasswordSerializer
+        )
 from .backends import EmailOrUsernameModelBackend
 from rest_framework import generics, status, permissions, views
 from .producer import publish
@@ -13,6 +26,8 @@ from django.core.mail import send_mail
 from .models import CustomUser
 from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.tokens import default_token_generator
+
 
 
 User = get_user_model()
@@ -37,6 +52,18 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         instance = serializer.save()
+
+        conf_view_url = resolve_url('accounts:confirm-email')
+        full_url = self.request.build_absolute_uri(conf_view_url)
+        conf_link = gen_confirmation_link(full_url, instance)
+
+        send_mail(
+                'email confirmation',
+                f' here is your confirmation link: {conf_link}',
+                settings.EMAIL_HOST_USER,
+                [instance.email],
+                fail_silently=False,
+                )
         publish('registery', {'user': instance.id}, 'auth-notification')
         return instance
 
@@ -228,3 +255,18 @@ class ChangePasswordView(views.APIView):
             message = {'detail': _('OTP did not matched')}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
         
+
+class ConfirmEmail(views.APIView):
+    model = CustomUser
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id', '')
+        confirmation_token = request.query_params.get('conf_token', '')
+
+        user = get_object_or_404(self.model, pk=user_id)
+
+        if not default_token_generator.check_token(user, confirmation_token):
+            return Response('Token is invalid or expired. Please request another confirmation email by signing in.', status=status.HTTP_400_BAD_REQUEST)
+        user.is_active = True
+        user.save()
+        return Response('Email successfully confirmed', status=status.HTTP_204_NO_CONTENT)

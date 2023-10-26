@@ -5,9 +5,11 @@ from .models import CustomUser, Notification
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ['first_name', 'last_name', 'username']
+    list_filter = ['is_active', 'is_staff']
 
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ['message']
+    list_filter = ['title']

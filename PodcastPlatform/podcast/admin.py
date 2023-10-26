@@ -6,9 +6,10 @@ from .models import Podcast, PodcastEpisode
 
 @admin.register(Podcast)
 class PodcastAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ['title', 'description', 'category', 'keywords']
 
 
 @admin.register(PodcastEpisode)
 class PodcastEpisodeAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ['title', 'description', 'keywords']
+    

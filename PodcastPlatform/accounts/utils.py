@@ -3,6 +3,7 @@ from django.core.cache import cache
 from datetime import datetime
 import jwt
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 
 
 def cache_refresh_token(refresh_token):
@@ -65,3 +66,10 @@ def encode_payload(payload):
 
 def get_otp():
     return random.randint(100000, 999999)
+
+
+def gen_confirmation_link(link, user):
+    conf_token = default_token_generator.make_token(user)
+    actiavation_link = f'{link}?user_id={user.id}&conf_token={conf_token}'
+
+    return actiavation_link
